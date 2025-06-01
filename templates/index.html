@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block body %}
+
+<style>
+	body {
+	  background-image: url("{{url_for('static', filename='uploads/user.jpg')}}");
+	  background-repeat: no-repeat;
+	  background-attachment: fixed;
+	
+	  background-size: 100% 100%;
+	
+	}
+	
+	</style>
+{% from "includes/formhelpers.html" import render_field %}
+<div class="topnav">
+    {% if session.logged_in %}
+		<a href="/">Home</a>
+		<a href="/upload">Upload Traffic Video</a>
+
+		<a href="/logout/">Logout</a>
+	{% else %}
+		<a href="/">Home</a>
+		<a href="/login/">User Login</a>
+		<a href="/register/">User Sign up</a>
+		<a href="/admin_login/">Admin</a>
+	
+		{% endif %}
+		
+</div>
+<div style="text-align:center;margin-top:20px;">
+	<img src="{{ url_for('static',filename='uploads/image.png')}}" alt="Traffic Monitoring" height="400" width="800">
+</div>
+<br>
+
+<hr>
+
+{% if session['logged_in'] %}
+    <h5></h5>
+	<div class="card" style="width: 18rem;">
+		<img src="{{url_for('static', filename='uploads/profile.png')}}" class="card-img-top" alt="...">
+		<div class="card-body">
+		  <h5 class="card-title">Welcome, {{session['username'] }}</h5>
+		  <p class="card-text">This is Home page of user</p>
+		  <a href="#" class="btn btn-primary">Application of ITS | UD</a>
+		</div>
+	  </div>
+{% endif %}
+
+{% endblock body %}

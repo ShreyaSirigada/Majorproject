@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block body %}
+{% from "includes/formhelpers.html" import render_field %}
+
+<div class="topnav">
+    {% if session.logged_in %}
+		<a href="/">Home</a>		
+		<a href="/logout/">Logout</a>
+	
+		
+		
+</div>
+<hr>
+<table class="table">
+	
+	<tbody>
+{% for mobile in myList %}
+	<tr>
+		<td><th scope="col">Brand Name</th></td>
+		<td>{{mobile.mobile_brand}}</td>
+	
+	</tr>
+
+
+	<tr>
+		<td><th scope="col">Model Name</th></td>
+		<td>{{mobile.model_name}}</td>
+
+
+	</tr>
+
+	<tr>
+		<td><th scope="col">Processor</th></td>
+		<td>{{mobile.processor}}</td>
+	
+	</tr>
+
+	<tr>
+		<td><th scope="col">FRONT CAMERA</th></td>
+		<td>{{mobile.front_c}}</td>
+		
+	</tr>
+
+	<tr>
+		<td><th scope="col">REAR CAMERA</th></td>
+		<td>{{mobile.rear_c}}</td>
+		
+	</tr>
+
+	<tr>
+		<td><th scope="col">HDD</th></td>
+		<td>{{mobile.hdd}}</td>
+	</tr>
+	
+	<tr>
+		<td><th scope="col">RAM</th></td>
+		<td>{{mobile.ram}}</td>
+	</tr>
+
+	<tr>
+		<td><th scope="col">Image1</th></td>
+		<td><img src="{{ url_for('display_image', filename=mobile.front_image ) }}"class="img-thumbnail" style="height: 75px; width: 95px;"></td>
+	</tr>
+	
+	<tr>
+		<td><th scope="col">Image2</th></td>
+		<td><img src="{{ url_for('display_image', filename=mobile.rear_image ) }}"class="img-thumbnail" style="height: 75px; width: 95px;"></td>
+	</tr>
+	 
+
+{% endfor %}
+</tbody>
+</table>
+{% endif %}
+{% endblock body %}

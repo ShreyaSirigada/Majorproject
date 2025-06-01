@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block body %}
+{% from "includes/formhelpers.html" import render_field %}
+<div class="topnav">
+    {% if session.logged_in %}
+		<a href="/addBrand/">Add</a>
+		<a href="/viewBrand/">View</a>
+		<a href="/logout/">Logout</a>
+	{% else %}
+		<a href="/">Home</a>
+		<a href="/login/">Login</a>
+		<a href="/register/">Sign up</a>
+		<a href="/admin_login/">Admin</a>
+
+	{% endif %}
+</div>
+<hr>
+
+
+{% if session['logged_in'] %}
+    
+		<form method="POST" enctype="multipart/form-data">
+			{{ render_field(form.mobile_brand, class="form-control") }}
+			{{ render_field(form.model_name, class="form-control") }}
+			{{ render_field(form.front_c, class="form-control") }}
+			{{ render_field(form.rear_c, class="form-control") }}
+			{{ render_field(form.processor, class="form-control") }}
+			{{ render_field(form.hdd, class="form-control") }}
+			{{ render_field(form.ram, class="form-control") }}
+			{{ render_field(form.front_image, class="form-control") }}
+			{{ render_field(form.rear_image, class="form-control") }}
+			 <input type="hidden" name="qrname" value="">
+
+			
+    		<button type="submit" class="btn btn-primary">Add Mobile</button>
+		</form>
+
+<hr>
+
+{% endif %}
+
+
+
+{% endblock body %}

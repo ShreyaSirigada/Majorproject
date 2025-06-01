@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+{% block body %}
+
+<style>
+    .routes-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 30px;
+        margin-top: 30px;
+    }
+
+    .route-card {
+        border: 2px solid #4CAF50;
+        border-radius: 15px;
+        padding: 15px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+
+    .route-card img {
+        width: 100%;
+        height: 300px;
+        object-fit: cover;
+        border-radius: 10px;
+    }
+
+    .signal-wrapper {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 15px;
+    }
+
+    .signal {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+
+    #red-signal, .red { background-color: rgba(255, 0, 0, 0.4); }
+    #orange-signal, .orange { background-color: rgba(255, 165, 0, 0.4); }
+    #green-signal, .green { background-color: rgba(0, 128, 0, 0.4); }
+
+    .blink { animation: blink 1s infinite; }
+    @keyframes blink {
+        0% { opacity: 1; }
+        50% { opacity: 0.3; }
+        100% { opacity: 1; }
+    }
+
+    .timer-label {
+        font-size: 0.85em;
+    }
+
+    button {
+        margin: 5px;
+        padding: 6px 15px;
+        font-size: 0.9em;
+        cursor: pointer;
+    }
+
+    #loader {
+        display: none;
+        font-style: italic;
+        color: #555;
+        margin-top: 10px;
+    }
+</style>
+
+{% if session['logged_in'] %}
+    <div class="card text-center">
+        <div class="card-header">
+            <h1>Traffic Prediction Dashboard – 4 Routes</h1>
+        </div>
+        <div class="card-body">
+            <div class="routes-grid">
+                {% for direction in ['North', 'South', 'East', 'West'] %}
+                <div class="route-card">
+                    <h3>{{ direction }} Route</h3>
+                    <img id="video-feed-{{ direction|lower }}" src="/video_feed/{{ direction|lower }}" alt="{{ direction }} Traffic Feed"/>
+                    <div id="prediction-{{ direction|lower }}">Vehicle Count: --</div>
+                    <div>
+                        <button onclick="predictTraffic('{{ direction|lower }}')">Predict Traffic</button>
+                    </div>
+                    <div id="loader-{{ direction|lower }}">Processing...</div>
+
+                    <div class="signal-wrapper">
+                        <div>
+                            <div id="{{ direction|lower }}-red-signal" class="signal red"></div>
+                            <div class="timer-label">Red: <span id="{{ direction|lower }}-red-timer">--</span>s</div>
+                        </div>
+                        <div>
+                            <div id="{{ direction|lower }}-orange-signal" class="signal orange"></div>
+                            <div class="timer-label">Orange: <span id="{{ direction|lower }}-orange-timer">--</span>s</div>
+                        </div>
+                        <div>
+                            <div id="{{ direction|lower }}-green-signal" class="signal green"></div>
+                            <div class="timer-label">Green: <span id="{{ direction|lower }}-green-timer">--</span>s</div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+<script>
+    function predictTraffic(direction) {
+        const loader = document.getElementById(`loader-${direction}`);
+        const predictionText = document.getElementById(`prediction-${direction}`);
+        loader.style.display = 'block';
+
+        fetch(`/predict_traffic/${direction}`, { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                loader.style.display = 'none';
+                const count = data.prediction;
+                predictionText.innerText = `Vehicle Count: ${count}`;
+                predictionText.style.color = count > 25 ? 'red' : count >= 15 ? 'orange' : 'green';
+                startTrafficCycle(direction, count);
+            })
+            .catch(err => {
+                loader.style.display = 'none';
+                console.error(`Error for ${direction}:`, err);
+            });
+    }
+
+    function startTrafficCycle(direction, count) {
+        const red = document.getElementById(`${direction}-red-signal`);
+        const orange = document.getElementById(`${direction}-orange-signal`);
+        const green = document.getElementById(`${direction}-green-signal`);
+
+        const redTimer = document.getElementById(`${direction}-red-timer`);
+        const orangeTimer = document.getElementById(`${direction}-orange-timer`);
+        const greenTimer = document.getElementById(`${direction}-green-timer`);
+
+        [red, orange, green].forEach(l => l.classList.remove('blink'));
+        [redTimer, orangeTimer, greenTimer].forEach(t => t.innerText = "--");
+
+        let redTime = 10, orangeTime = 5, greenTime = 8;
+        if (count > 25) {
+            redTime = 15; orangeTime = 6; greenTime = 4;
+        } else if (count >= 15) {
+            redTime = 10; orangeTime = 5; greenTime = 6;
+        }
+
+        function activate(light, timer, duration, next) {
+            light.classList.add('blink');
+            let timeLeft = duration;
+            timer.innerText = timeLeft;
+            const interval = setInterval(() => {
+                timeLeft--;
+                timer.innerText = timeLeft;
+                if (timeLeft < 0) {
+                    clearInterval(interval);
+                    light.classList.remove('blink');
+                    timer.innerText = "--";
+                    if (next) next();
+                }
+            }, 1000);
+        }
+
+        activate(red, redTimer, redTime, () => {
+            activate(orange, orangeTimer, orangeTime, () => {
+                activate(green, greenTimer, greenTime, null);
+            });
+        });
+    }
+</script>
+
+{% endblock %}

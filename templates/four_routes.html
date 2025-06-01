@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Four Route Traffic Signal</title>
+    <style>
+        body {
+            font-family: Arial;
+            text-align: center;
+        }
+
+        .junction {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 50px;
+            justify-content: center;
+            align-items: center;
+            margin-top: 50px;
+        }
+
+        .signal-box {
+            border: 2px solid #888;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .signal {
+            width: 60px;
+            height: 60px;
+            margin: 10px auto;
+            border-radius: 50%;
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+
+        .green.blink {
+            background-color: green;
+            animation: blink 1s infinite;
+        }
+
+        .red.blink {
+            background-color: red;
+            animation: blink 1s infinite;
+        }
+
+        .yellow.blink {
+            background-color: orange;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        .timer {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Smart Traffic Signal Control - 4 Routes</h1>
+<button onclick="startTrafficCycle()">Start Traffic Cycle</button>
+<p id="status">Click the button to begin</p>
+
+<div class="junction">
+    <div class="signal-box" id="North-box">
+        <h3>North</h3>
+        <div class="signal" id="North-signal"></div>
+        <div class="timer" id="North-timer">--</div>
+    </div>
+    <div class="signal-box" id="South-box">
+        <h3>South</h3>
+        <div class="signal" id="South-signal"></div>
+        <div class="timer" id="South-timer">--</div>
+    </div>
+    <div class="signal-box" id="East-box">
+        <h3>East</h3>
+        <div class="signal" id="East-signal"></div>
+        <div class="timer" id="East-timer">--</div>
+    </div>
+    <div class="signal-box" id="West-box">
+        <h3>West</h3>
+        <div class="signal" id="West-signal"></div>
+        <div class="timer" id="West-timer">--</div>
+    </div>
+</div>
+
+<script>
+    let signalOrder = ["North", "South", "East", "West"];
+
+    function resetAllSignals() {
+        signalOrder.forEach(route => {
+            const signal = document.getElementById(route + "-signal");
+            signal.className = "signal";
+            document.getElementById(route + "-timer").innerText = "--";
+        });
+    }
+
+    async function startTrafficCycle() {
+        document.getElementById("status").innerText = "Fetching predictions...";
+        const response = await fetch('/predict_traffic');
+        const data = await response.json();
+        document.getElementById("status").innerText = "Running Signal Cycle...";
+
+        let sortedRoutes = signalOrder.sort((a, b) => data[b] - data[a]);
+
+        let index = 0;
+
+        function cycleNext() {
+            if (index >= sortedRoutes.length) {
+                document.getElementById("status").innerText = "Cycle Completed.";
+                return;
+            }
+
+            const current = sortedRoutes[index];
+            const time = Math.max(5, Math.min(15, data[current]));
+
+            resetAllSignals();
+
+            const signal = document.getElementById(current + "-signal");
+            const timer = document.getElementById(current + "-timer");
+            signal.classList.add("green", "blink");
+
+            let countdown = time;
+            timer.innerText = countdown;
+
+            const interval = setInterval(() => {
+                countdown--;
+                timer.innerText = countdown;
+                if (countdown <= 0) {
+                    clearInterval(interval);
+                    index++;
+                    cycleNext();
+                }
+            }, 1000);
+        }
+
+        cycleNext();
+    }
+</script>
+
+</body>
+</html>

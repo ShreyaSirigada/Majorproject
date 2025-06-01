@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>View Traffic Data</title>
+    <style>
+        table {
+            width: 60%;
+            margin: auto;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #444;
+            padding: 10px;
+            text-align: center;
+        }
+        th {
+            background-color: #ddd;
+        }
+    </style>
+</head>
+<body>
+    <h2 style="text-align:center;">Traffic Data</h2>
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Direction</th>
+            <th>Vehicle Count</th>
+            <th>Time Slot</th>
+        </tr>
+        {% for row in data %}
+        <tr>
+            <td>{{ row.id }}</td>
+            <td>{{row.direction}}</td>
+            <td>{{ row.vehicle_count }}</td>
+            <td>{{ row.timestamp }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

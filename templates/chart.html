@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block body %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
+<style>
+    body {
+        background-image: url("{{ url_for('static', filename='uploads/admin.jpg') }}");
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        background-size: 100% 100%;
+    }
+</style>
+
+{% from "includes/formhelpers.html" import render_field %}
+<div class="topnav">
+    {% if session.logged_in %}
+        <a href="/ahome/">Home</a>
+        <a href="/viewTraffic/">View Traffic Data</a>
+        <a href="/chart/">Chart</a>
+        <a href="/logout/">Logout</a>
+    {% else %}
+        <a href="/">Home</a>
+        <a href="/login/">Login</a>
+        <a href="/register/">Sign up</a>
+        <a href="/admin_login/">Admin</a>
+    {% endif %}
+</div>
+
+{% if session['logged_in'] %}
+
+<div class="section-title">
+  <center><p></p></center>
+</div>
+
+<center><h1>Traffic Data: Vehicle Count in Each Time Slot</h1></center>
+
+<!-- Traffic Data Bar Chart -->
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script type="text/javascript">
+google.charts.load("current", {packages:['corechart']});
+google.charts.setOnLoadCallback(drawChart);
+function drawChart() {
+var data = google.visualization.arrayToDataTable([
+ ["Time Slot", "Vehicle Count", { role: "style" } ],
+ ["8:00 - 9:00 AM", 120, "#00FFFF"],
+ ["9:00 - 10:00 AM", 150, "#DF01A5"],
+ ["10:00 - 11:00 AM", 180, "#FF0000"],
+ ["11:00 - 12:00 PM", 130, "color: #FFBF00"]
+]);
+
+var view = new google.visualization.DataView(data);
+view.setColumns([0, 1,
+                { calc: "stringify",
+                  sourceColumn: 1,
+                  type: "string",
+                  role: "annotation" },
+                2]);
+
+var options = {
+ title: "Vehicle Count per Time Slot",
+ width: 900,
+ height: 400,
+ bar: {groupWidth: "95%"},
+ legend: { position: "none" },
+};
+var chart = new google.visualization.ColumnChart(document.getElementById("columnchart_values"));
+chart.draw(view, options);
+}
+</script>
+<center><div id="columnchart_values" style="width: 900px; height: 300px;"></div></center>
+</br>
+
+<!-- Traffic Signal Status Pie Chart -->
+<center><h1>Traffic Signal Status Based on Vehicle Count</h1></center>
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script type="text/javascript">
+google.charts.load("current", {packages:["corechart"]});
+google.charts.setOnLoadCallback(drawChart);
+function drawChart() {
+  var data = google.visualization.arrayToDataTable([
+    ['Signal', 'Percentage'],
+    ['Red (Heavy Traffic)', 50],
+    ['Green (Light Traffic)', 40],
+    ['Orange (Moderate Traffic)', 10]
+  ]);
+
+  var options = {
+    title: 'Traffic Signal Status',
+    is3D: true,
+    slices: {
+      0: { offset: 0.1, color: '#FF0000' }, // Red for Heavy Traffic
+      1: { offset: 0.1, color: '#00FF00' }, // Green for Light Traffic
+      2: { offset: 0.1, color: '#FFA500' }  // Orange for Moderate Traffic
+    }
+  };
+
+  var chart = new google.visualization.PieChart(document.getElementById('piechart_3d'));
+  chart.draw(data, options);
+}
+</script>
+<center><div id="piechart_3d" style="width: 900px; height: 300px;"></div></center>
+</br>
+
+<!-- Traffic Prediction Accuracy Plot -->
+<center><h1>Traffic Prediction Model Accuracy Over Time</h1></center>
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script type="text/javascript">
+google.charts.load('current', {packages: ['corechart','line']});  
+google.charts.setOnLoadCallback(drawChart);
+function drawChart() {
+ var data = new google.visualization.DataTable();
+ data.addColumn('string', 'Time');
+ data.addColumn('number', 'Model Accuracy');
+
+ data.addRows([
+    ['10 AM', 0.80],
+    ['12 PM', 0.85],
+    ['2 PM', 0.90],
+    ['4 PM', 0.93],
+    ['6 PM', 0.95],
+ ]);
+
+ var options = {
+   title: 'Accuracy of Traffic Prediction Model Over Time',
+   hAxis: { title: 'Time' },
+   vAxis: { title: 'Accuracy' },
+   'width':900,
+   'height':400
+ };
+
+ var chart = new google.visualization.LineChart(document.getElementById('container'));
+ chart.draw(data, options);
+}
+</script>
+<div id="container" style="width: 900px; height: 200px; padding-left: 10%;"></div>
+
+{% endif %}
+
+{% endblock body %}

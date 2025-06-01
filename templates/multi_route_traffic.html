@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+{% block body %}
+
+<style>
+    .signal-wrapper {
+        display: flex;
+        justify-content: space-around;
+        flex-wrap: wrap;
+        margin-top: 30px;
+    }
+    .route-section {
+        text-align: center;
+        margin: 20px;
+        width: 45%;
+        padding: 10px;
+        box-shadow: 0 0 10px #ccc;
+    }
+    .signal {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        margin: 10px auto;
+        line-height: 80px;
+        font-weight: bold;
+        color: white;
+        font-size: 16px;
+    }
+    .green { background-color: green; }
+    .red { background-color: red; }
+    canvas {
+        max-width: 300px;
+        margin: 0 auto;
+    }
+    #prediction-result {
+        text-align: center;
+        margin-top: 20px;
+        font-size: 20px;
+        color: #007bff;
+        font-weight: bold;
+    }
+</style>
+
+<div class="topnav">
+    {% if session.logged_in %}
+        <a href="/" id="home-link">Home</a>
+        <a href="/upload/" id="upload-link">Upload Traffic Video</a>
+        <a href="/logout/" id="logout-link">Logout</a>
+    {% else %}
+        <a href="/">Home</a>
+        <a href="/login/">User Login</a>
+        <a href="/register/">User Sign up</a>
+        <a href="/admin_login/">Admin</a>
+    {% endif %}
+</div>
+<hr>
+    <!-- Signals for each route -->
+    <div class="signal-wrapper">
+        {% for route in ['north', 'south', 'east', 'west'] %}
+        <div class="route-section">
+            <h4>{{ route.capitalize() }} Route</h4>
+            <div id="{{ route }}-signal" class="signal red">Red</div>
+            <div>Time: <span id="{{ route }}-timer">--</span></div>
+            <canvas id="{{ route }}-chart"></canvas>
+            <div id="{{ route }}-prediction" style="font-size: 18px;"></div>
+        </div>
+        {% endfor %}
+    </div>
+    <!-- Traffic Prediction Result -->
+    <div id="prediction-result" style="display:none;">
+        <h3>Traffic Predictions Completed</h3>
+    </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    let trafficData = { north: [], south: [], east: [], west: [] };
+    let chartInstances = {};
+    let timer = 0;
+    let currentGreen = '';
+    let cycleCount = 0;
+    const totalCycles = 4; // Number of routes to complete (4 routes: north, south, east, west)
+
+    function generateRandomTraffic() {
+        return Math.floor(Math.random() * 40) + 1;
+    }
+
+    function getSignalTime(traffic) {
+        // Reduced green light time for each route to 10 seconds
+        return 10;
+    }
+
+    function updateTrafficData() {
+        ['north', 'south', 'east', 'west'].forEach(route => {
+            if (trafficData[route].length >= 6) trafficData[route].shift();
+            trafficData[route].push(generateRandomTraffic());
+        });
+    }
+
+    function drawCharts() {
+        const latestCounts = [
+            trafficData.north.at(-1),
+            trafficData.south.at(-1),
+            trafficData.east.at(-1),
+            trafficData.west.at(-1)
+        ];
+
+        ['north', 'south', 'east', 'west'].forEach(route => {
+            const ctx = document.getElementById(`${route}-chart`).getContext('2d');
+
+            if (chartInstances[route]) {
+                chartInstances[route].destroy();
+            }
+
+            chartInstances[route] = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['North', 'South', 'East', 'West'],
+                    datasets: [{
+                        label: 'Current Vehicle Count',
+                        data: latestCounts,
+                        backgroundColor: ['green', 'red', 'orange', 'blue']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    animation: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Vehicles' }
+                        },
+                        x: {
+                            title: { display: true, text: 'Route' }
+                        }
+                    }
+                }
+            });
+        });
+    }
+
+    function updateSignals() {
+        const latest = {
+            north: trafficData.north.at(-1),
+            south: trafficData.south.at(-1),
+            east: trafficData.east.at(-1),
+            west: trafficData.west.at(-1)
+        };
+
+        currentGreen = Object.keys(latest).reduce((a, b) => latest[a] > latest[b] ? a : b);
+        timer = getSignalTime(latest[currentGreen]);
+
+        ['north', 'south', 'east', 'west'].forEach(route => {
+            const signal = document.getElementById(`${route}-signal`);
+            const timerBox = document.getElementById(`${route}-timer`);
+
+            if (route === currentGreen) {
+                signal.className = 'signal green';
+                signal.innerText = 'Green';
+                timerBox.innerText = `${timer}s`;
+            } else {
+                signal.className = 'signal red';
+                signal.innerText = 'Red';
+                timerBox.innerText = '';
+            }
+        });
+    }
+
+    function countdown() {
+        if (timer > 0) {
+            document.getElementById(`${currentGreen}-timer`).innerText = `${timer}s`;
+            timer--;
+        } else {
+            cycleCount++;
+            if (cycleCount < totalCycles) {
+                simulateCycle(); // Continue to next route
+            } else {
+                stopSimulation(); // Complete all route cycles
+            }
+        }
+    }
+
+    function simulateCycle() {
+        updateTrafficData();
+        drawCharts();
+        updateSignals();
+    }
+
+    function stopSimulation() {
+        clearInterval(intervalId);
+        document.getElementById('prediction-result').style.display = 'block';
+        displayRoutePredictions();
+    }
+
+    function displayRoutePredictions() {
+        // Show predictions for each route
+        ['north', 'south', 'east', 'west'].forEach(route => {
+            const predictionText = getTrafficPredictionResult(route);
+            document.getElementById(`${route}-prediction`).innerText = `Prediction: ${predictionText}`;
+        });
+    }
+
+    function getTrafficPredictionResult(route) {
+        const totalTraffic = trafficData[route].reduce((a, b) => a + b, 0);
+        const averageTraffic = totalTraffic / trafficData[route].length;
+
+        if (averageTraffic > 30) return "High Traffic Level";
+        if (averageTraffic > 20) return "Moderate Traffic Level";
+        return "Low Traffic Level";
+    }
+
+    // Start simulation
+    window.onload = function () {
+        for (let i = 0; i < 6; i++) updateTrafficData();  // preload
+        simulateCycle();  // First cycle
+        intervalId = setInterval(countdown, 1000);  // Start countdown
+    };
+</script>
+
+{% endblock %}

@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block body %}
+
+<style>
+    body { 
+        font-family: Arial, sans-serif; 
+        text-align: center; 
+        margin: 20px; 
+    }
+
+    form { 
+        margin-bottom: 20px; 
+    }
+
+    iframe {
+        width: 80%;
+        height: 400px;
+        border: 2px solid #4CAF50;
+        border-radius: 15px;
+        margin-top: 20px;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .upload-feedback {
+        color: #4CAF50;
+        font-size: 1.2rem;
+        margin-top: 20px;
+    }
+
+    .error-message {
+        color: red;
+        font-size: 1rem;
+        margin-top: 10px;
+    }
+</style>
+
+<div class="topnav">
+    {% if session.logged_in %}
+        <a href="/">Home</a>
+        <a href="/upload/">Upload Traffic Video</a>
+        
+        <a href="/logout/">Logout</a>
+    {% else %}
+        <a href="/">Home</a>
+        <a href="/login/">User Login</a>
+        <a href="/register/">User Sign up</a>
+        <a href="/admin_login/">Admin</a>
+    {% endif %}
+</div>
+<hr>
+
+{% if session['logged_in'] %}
+    <div class="card text-center">
+        <div class="card-header">
+            Intelligent Traffic System for Urban Conditions Using Real-Time Vehicle Tracking
+        </div>
+        <div class="card-body">
+            <h5 class="card-title">Upload Files</h5>
+            <p class="card-text">
+                <a href="#" class="btn btn-warning">ITS | UD[ {{session['username'] }} ]</a>
+            </p>
+
+            <!-- File Upload Form -->
+            <form id="uploadForm" action="/upload1/" method="post" enctype="multipart/form-data">
+                <input type="file" name="fileName" id="fileInput" required>
+                <button type="submit">Upload</button>
+            </form>
+
+    </div>
+{% endif %}
+
+
+{% endblock %}

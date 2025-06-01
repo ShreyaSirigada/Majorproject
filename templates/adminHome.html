@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block body %}
+
+<style>
+	body {
+	  background-image: url("{{url_for('static', filename='uploads/admin.jpg')}}");
+	  background-repeat: no-repeat;
+	  background-attachment: fixed;
+	
+	  background-size: 100% 100%;
+	
+	}
+	
+	</style>
+
+{% from "includes/formhelpers.html" import render_field %}
+<div class="topnav">
+    {% if session.logged_in %}
+		<a href="/ahome/">Home</a>
+		<a href="/viewBrand/">View</a>
+		<a href="/chart/">Chart</a>
+		<a href="/logout/">Logout</a>
+	{% else %}
+		<a href="/">Home</a>
+		<a href="/login/">Login</a>
+		<a href="/register/">Sign up</a>
+		<a href="/admin_login/">Admin</a>
+	{% endif %}
+</div>
+<hr>
+
+{% if session['logged_in'] %}
+    <h5>Welcome, {{session['username'] }}</h5>
+<hr>
+
+{% endif %}
+
+
+
+{% endblock body %}

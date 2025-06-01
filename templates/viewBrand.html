@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block body %}
+
+<style>
+	body {
+	  background-image: url("{{url_for('static', filename='uploads/admin.jpg')}}");
+	  background-repeat: no-repeat;
+	  background-attachment: fixed;
+	
+	  background-size: 100% 100%;
+	
+	}
+	
+	</style>
+
+{% from "includes/formhelpers.html" import render_field %}
+
+
+<div class="topnav">
+    {% if session.logged_in %}
+		<a href="/ahome/">Home</a>
+		<a href="/viewBrand/">View</a>
+		<a href="/chart/">Chart</a>
+		<a href="/logout/">Logout</a>
+	<br>	
+	<br>
+	<br>	
+		
+		
+</div>
+<hr>
+
+<div class="card">
+    <h5 class="card-header" style="color: rgb(240, 234, 234); background-color: rgb(94, 7, 7);">Admin | Users List</h5>
+    <div class="card-body">
+        <h5 class="card-title">List of User's</h5>
+<table class="table">
+	<thead>
+	  <tr>
+		<th scope="col">#</th>
+		<th scope="col"> Name</th>
+		<th scope="col">User Name</th>
+		<th scope="col">Email</th>
+		
+		<th scope="col">ACTION</th>
+	  </tr>
+	</thead>
+	<tbody>
+{% for mobile in myList %}
+<tr>
+	<th scope="row">{{loop.index}}</th>
+	<td>{{mobile.name}}</td>
+	<td>{{mobile.username}}</td>
+	<td>{{mobile.email}}</td>
+	
+	<td><a href="/delete?id={{mobile.id}}" class="btn btn-warning">Delete</a></td>
+  </tr>
+
+{% endfor %}
+</tbody>
+</table>
+{% endif %}
+</div>
+</div>
+{% endblock body %}

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Video Stream</title>
+</head>
+<body>
+    <h1>Live Video Stream</h1>
+    <img src="{{ url_for('video_feed') }}" width="800" height="600">
+    
+    <button onclick="startDetection()">Start Detection</button>
+    <button onclick="stopDetection()">Stop Detection</button>
+    
+    <h2>Signal Status: </h2>
+    <p id="signal_status">Loading...</p>
+    
+    <script>
+        function startDetection() {
+            fetch('/start_detection', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => alert(data.message));
+        }
+
+        function stopDetection() {
+            fetch('/stop_detection', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => alert(data.message));
+        }
+
+        // Function to fetch and update signal status
+        function updateSignalStatus() {
+            fetch('/signal_status')  // Assuming you will create this route to fetch the signal status
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('signal_status').innerText = JSON.stringify(data.signals);
+                });
+        }
+
+        // Periodically update signal status every 2 seconds
+        setInterval(updateSignalStatus, 2000);
+    </script>
+</body>
+</html>

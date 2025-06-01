@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block body %}
+<style>
+	body {
+	  background-image: url("{{url_for('static', filename='uploads/user.jpg')}}");
+	  background-repeat: no-repeat;
+	  background-attachment: fixed;
+	
+	  background-size: 100% 100%;
+	
+	}
+	
+	</style>
+{% from "includes/formhelpers.html" import render_field %}
+<div class="topnav">
+  <a href="/">Home</a>
+	<a href="/login/">User Login</a>
+	<a href="/register/">User Sign up</a>
+	<a href="/admin_login/">Admin</a>
+</div>
+
+<hr>
+
+<div class="card">
+    <h5 class="card-header">User Login Form</h5>
+    <div class="card-body">
+      <h5 class="card-title">Login</h5>
+      <p class="card-text">
+        <form method="POST">
+
+            {{ render_field(form.email, class="form-control") }}
+            {{ render_field(form.password, class="form-control") }}
+        
+            <button type="submit" class="btn btn-primary">Login</button>
+        </form>
+
+      </p>
+      <a href="/register" class="btn btn-warning">Create a New Account!</a>
+    </div>
+  </div>
+
+
+
+<hr>
+
+
+
+{% endblock body %}
